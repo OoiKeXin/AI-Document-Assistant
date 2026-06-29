@@ -23,8 +23,9 @@ model User {
 
 model Document {
   id        String    @id @default(cuid())
-  name      String    // original filename
-  s3Key     String    // path in AWS S3
+  name      String
+  s3Key     String
+  content   String    // ← ADD THIS — extracted PDF text
   userId    String
   createdAt DateTime  @default(now())
   user      User      @relation(fields: [userId], references: [id])
