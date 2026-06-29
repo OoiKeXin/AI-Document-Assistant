@@ -119,7 +119,7 @@ export default function ChatPage() {
             value={input}
             onChange={(event) => setInput(event.target.value)}
             placeholder="Ask a question about this document..."
-            className="flex-1 border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            className="flex-1 border rounded-xl px-4 py-2.5 text-sm bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-300"
           />
           <button
             type="submit"

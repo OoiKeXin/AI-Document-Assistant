@@ -37,9 +37,14 @@ export async function POST(req: NextRequest) {
 
     // 4. extract text from PDF (used for AI later)
     const parser = new PDFParse({ data: buffer })
-    const pdfData = await parser.getText()
-    const extractedText = pdfData.text
-    await parser.destroy()
+    let extractedText = ''
+
+    try {
+      const pdfData = await parser.getText()
+      extractedText = pdfData.text
+    } finally {
+      await parser.destroy()
+    }
 
     // 5. create unique key and upload to S3
     const s3Key = `documents/${session.user.id}/${Date.now()}-${file.name}`

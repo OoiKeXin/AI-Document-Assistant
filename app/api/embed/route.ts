@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
 
     // get embeddings from OpenAI for all chunks at once
     const embeddingRes = await openai.embeddings.create({
-      model: 'text-embedding-3-small',
+      model: process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small',
       input: chunks,
     })
 
