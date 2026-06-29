@@ -1,22 +1,22 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../lib/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../lib/generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  extensions = [vector]
 }
 
 model User {
   id        String     @id @default(cuid())
   email     String     @unique
   name      String?
-  password  String     // hashed password
+  password  String // hashed password
   createdAt DateTime   @default(now())
   documents Document[]
 }
@@ -25,18 +25,27 @@ model Document {
   id        String    @id @default(cuid())
   name      String
   s3Key     String
-  content   String    // ← ADD THIS — extracted PDF text
+  content   String // extracted PDF text
   userId    String
   createdAt DateTime  @default(now())
   user      User      @relation(fields: [userId], references: [id])
   messages  Message[]
+  chunks    Chunk[]
 }
 
 model Message {
-  id         String    @id @default(cuid())
+  id         String   @id @default(cuid())
   content    String
-  role       String    // "user" or "assistant"
+  role       String // "user" or "assistant"
   documentId String
-  createdAt  DateTime  @default(now())
-  document   Document  @relation(fields: [documentId], references: [id])
+  createdAt  DateTime @default(now())
+  document   Document @relation(fields: [documentId], references: [id])
+}
+
+model Chunk {
+  id         String                    @id @default(cuid())
+  content    String                    // the text chunk
+  embedding  Unsupported("vector(1536)")// OpenAI embedding = 1536 dimensions
+  documentId String
+  document   Document                  @relation(fields: [documentId], references: [id], onDelete: Cascade)
 }

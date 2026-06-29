@@ -3,7 +3,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { uploadToS3 } from '@/lib/s3'
-import pdf from 'pdf-parse'
+import { PDFParse } from 'pdf-parse'
+
+export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
   try {
@@ -34,8 +36,10 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(bytes)
 
     // 4. extract text from PDF (used for AI later)
-    const pdfData = await pdf(buffer)
+    const parser = new PDFParse({ data: buffer })
+    const pdfData = await parser.getText()
     const extractedText = pdfData.text
+    await parser.destroy()
 
     // 5. create unique key and upload to S3
     const s3Key = `documents/${session.user.id}/${Date.now()}-${file.name}`
@@ -49,6 +53,13 @@ export async function POST(req: NextRequest) {
         content: extractedText,   // we'll add this field to schema next
         userId:  session.user.id,
       },
+    })
+
+    // trigger embedding in background (don't await — let upload return fast)
+    fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/embed`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ documentId: document.id }),
     })
 
     return NextResponse.json({ document }, { status: 201 })
