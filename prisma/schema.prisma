@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  name      String?
+  password  String     // hashed password
+  createdAt DateTime   @default(now())
+  documents Document[]
+}
+
+model Document {
+  id        String    @id @default(cuid())
+  name      String    // original filename
+  s3Key     String    // path in AWS S3
+  userId    String
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id])
+  messages  Message[]
+}
+
+model Message {
+  id         String    @id @default(cuid())
+  content    String
+  role       String    // "user" or "assistant"
+  documentId String
+  createdAt  DateTime  @default(now())
+  document   Document  @relation(fields: [documentId], references: [id])
+}
